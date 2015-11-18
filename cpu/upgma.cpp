@@ -49,25 +49,35 @@ void update(float *mat, int n, int idx1, int idx2, int num_nodes1,
 }
 
 void cleanupTree(Tree *tree) {
-  if (tree == nullptr) {
-    return;
-  }
-  // Reach the left
+  // Reach the leaf
   if (tree->left == nullptr && tree->right == nullptr) {
     delete tree;
+    return;
   }
   cleanupTree(tree->left);
   cleanupTree(tree->right);
 }
 
+void printTree(Tree *tree) {
+  // Reach the leaf
+  if (tree->left == nullptr && tree->right == nullptr) {
+    return;
+  }
+  cout << "(";
+  printTree(tree->left);
+  cout << ": " << tree->branch_length[0] << ", ";
+  printTree(tree->right);
+  cout << ": " << tree->branch_length[1] << ")";
+}
+
 int main() {
   const int num_seqs = 7;
-  float a[num_seqs][num_seqs]{{0.0f,  19.0f, 27.0f, 8.0f,  33.0f, 18.0f, 13.0f},
-                              {19.0f, 0.0f,  31.0f, 18.0f, 36.0f, 1.0f,  13.0f},
-                              {27.0f, 31.0f, 0.0f,  26.0f, 41.0f, 32.0f, 29.0f},
-                              {8.0f,  18.0f, 26.0f, 0.0f,  31.0f, 17.0f, 14.0f},
-                              {33.0f, 36.0f, 41.0f, 31.0f, 0.0f,  35.0f, 28.0f},
-                              {18.0f, 1.0f,  32.0f, 17.0f, 35.0f, 0.0f,  12.0f},
+  float a[num_seqs][num_seqs]{{0.0f, 19.0f, 27.0f, 8.0f, 33.0f, 18.0f, 13.0f},
+                              {19.0f, 0.0f, 31.0f, 18.0f, 36.0f, 1.0f, 13.0f},
+                              {27.0f, 31.0f, 0.0f, 26.0f, 41.0f, 32.0f, 29.0f},
+                              {8.0f, 18.0f, 26.0f, 0.0f, 31.0f, 17.0f, 14.0f},
+                              {33.0f, 36.0f, 41.0f, 31.0f, 0.0f, 35.0f, 28.0f},
+                              {18.0f, 1.0f, 32.0f, 17.0f, 35.0f, 0.0f, 12.0f},
                               {13.0f, 13.0f, 29.0f, 14.0f, 28.0f, 12.0f, 0.0f}};
 
   Tree *nodes[num_seqs];
@@ -80,22 +90,20 @@ int main() {
     int idx = getMinIdx((float *)a, num_seqs * num_seqs);
     int idx1 = idx / num_seqs;
     int idx2 = idx % num_seqs;
+    if (idx1 > idx2) {
+      swap(idx1, idx2);
+    }
     float length = a[idx1][idx2];
-    root =
-        new Tree(nodes[idx1]->num_nodes + nodes[idx2]->num_nodes, length / 2, nodes[idx1],
-                 nodes[idx2], length / 2 - nodes[idx1]->total_length,
-                 length / 2 - nodes[idx2]->total_length);
+    root = new Tree(nodes[idx1]->num_nodes + nodes[idx2]->num_nodes, length / 2,
+                    nodes[idx1], nodes[idx2],
+                    length / 2 - nodes[idx1]->total_length,
+                    length / 2 - nodes[idx2]->total_length);
     update((float *)a, num_seqs, idx1, idx2, nodes[idx1]->num_nodes,
            nodes[idx2]->num_nodes);
-    for (int i = 0; i < num_seqs; ++i) {
-      for (int j = 0; j < num_seqs; ++j) {
-        cout << a[i][j] << ",\t";
-      }
-      cout << "\n";
-    }
-    cout << "---------------------------------------------------\n";
     nodes[idx1] = root;
   }
+
+  printTree(root);
 
   // Print the Tree
   cleanupTree(root);
