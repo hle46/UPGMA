@@ -1,15 +1,15 @@
-CC = g++
-CFLAGS =-c -Wall -Wextra -std=c++11
-LDFLAGS =
-SRCS = upgma.cpp
-OBJS = $(SRCS:.cpp=.o)
+CC = nvcc
+CFLAGS = -c -std=c++11 -arch=sm_50 -O3 -I/usr/local/cuda/include 
+LDFLAGS = -lcudart -L/usr/local/cuda/lib64
+SRCS = upgma.cu
+OBJS = $(SRCS:.cu=.o)
 
 all: upgma
 
 upgma: upgma.o
-	$(CC) $(LDFLAGS) -o $@ $<
+	$(CC) -o $@ $< $(LDFLAGS)
 
-%.o: %.cpp
+%.o: %.cu
 	$(CC) $(CFLAGS) -o $@ $<
 
 clean:
